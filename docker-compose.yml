@@ -20,7 +20,7 @@ services:
 
   web:
     build: ./app                               # builds app/Dockerfile
-    image: notes-web:2.0
+    image: notes-web:3.0
     container_name: notes-web
     restart: unless-stopped
     env_file: .env
