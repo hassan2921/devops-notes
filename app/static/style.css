@@ -1,0 +1,77 @@
+:root {
+  --navy: #1f3b73; --navy-light: #e3e8f2; --bg: #f4f6fa; --card: #fff;
+  --text: #1d2433; --muted: #6b7385; --border: #d9dee8;
+  --red: #c0392b; --amber: #c27c0e; --green: #2e7d4f;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: var(--bg); color: var(--text); }
+a { color: var(--navy); }
+
+/* top bar */
+.topbar { background: var(--navy); color: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.brand { font-weight: 700; font-size: 18px; color: #fff; text-decoration: none; }
+.topbar .user { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+.topbar form { margin: 0; }
+.topbar button { background: rgba(255,255,255,.15); }
+
+.container { max-width: 900px; margin: 24px auto; padding: 0 16px; }
+.narrow { max-width: 420px; }
+h1 { color: var(--navy); margin: 0 0 4px; }
+.meta { font-size: 13px; color: var(--muted); display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+
+/* flash messages */
+.flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 10px; font-size: 14px; }
+.flash-success { background: #e4f4ea; color: var(--green); }
+.flash-error { background: #fbe7e5; color: var(--red); }
+
+/* cards + forms */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.card h2 { font-size: 16px; margin: 0 0 12px; }
+label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+input[type=text], input[type=password], input[type=search], select, textarea {
+  width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 6px; font: inherit; font-size: 14px; background: #fff;
+}
+textarea { min-height: 70px; resize: vertical; }
+.field { margin-bottom: 12px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+.row > * { flex: 1; min-width: 140px; }
+.row > .shrink { flex: 0 0 auto; min-width: 0; }
+
+button, .btn { display: inline-block; padding: 9px 14px; background: var(--navy); color: #fff; border: 0; border-radius: 6px;
+  cursor: pointer; text-decoration: none; font-size: 14px; white-space: nowrap; }
+.btn-light { background: var(--navy-light); color: var(--navy); }
+.btn-danger { background: var(--red); }
+.btn-small { padding: 5px 10px; font-size: 13px; }
+
+/* stats */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.stat .num { font-size: 24px; font-weight: 700; color: var(--navy); }
+.stat .lbl { font-size: 13px; color: var(--muted); }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.chip { padding: 5px 12px; border-radius: 999px; background: var(--navy-light); text-decoration: none; font-size: 13px; }
+.chip.active { background: var(--navy); color: #fff; }
+
+/* notes */
+.notes { list-style: none; padding: 0; margin: 0; }
+.note-item { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+.note-item.prio-High { border-left-color: var(--red); }
+.note-item.prio-Medium { border-left-color: var(--amber); }
+.note-item.prio-Low { border-left-color: var(--green); }
+.note-item.pinned { background: #fffbea; }
+.note-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.note-title { font-weight: 600; font-size: 16px; }
+.note-content { margin: 6px 0; white-space: pre-wrap; color: #333; }
+.note-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.actions { display: flex; gap: 6px; }
+.actions form { margin: 0; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; margin-right: 4px; background: var(--navy-light); color: var(--navy); }
+.badge-High { background: #fbe7e5; color: var(--red); }
+.badge-Medium { background: #fdf1dc; color: var(--amber); }
+.badge-Low { background: #e4f4ea; color: var(--green); }
+.pin-badge { background: #fff0b3; color: #7a5b00; }
+
+.pagination { display: flex; gap: 6px; justify-content: center; align-items: center; margin: 16px 0; font-size: 14px; }
+.empty { text-align: center; color: var(--muted); padding: 30px; }
+.center { text-align: center; }

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Register | Notes Manager{% endblock %}
+{% block container_class %}narrow{% endblock %}
+{% block content %}
+  <div class="card">
+    <h1 id="page-title">Create account</h1>
+    <form method="POST" id="register-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field">
+        <label for="username">Username (3-30 letters, numbers, _)</label>
+        <input type="text" id="username" name="username" value="{{ username or '' }}" required autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Password (at least 6 characters)</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      <div class="field">
+        <label for="confirm">Confirm password</label>
+        <input type="password" id="confirm" name="confirm" required>
+      </div>
+      <button type="submit" id="register-btn">Create account</button>
+    </form>
+    <p>Already registered? <a href="{{ url_for('auth.login') }}" id="login-link">Log in</a></p>
+  </div>
+{% endblock %}

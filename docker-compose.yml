@@ -1,0 +1,77 @@
+# Four services:
+#   nginx  -> reverse proxy, the ONLY one published on port 80
+#   web    -> Flask app (custom image from app/Dockerfile)
+#   db     -> PostgreSQL (notes)
+#   redis  -> Redis (page-visit counter)
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: notes-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"                                # host:container (ALB -> EC2:80 -> nginx)
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro   # bind mount, read-only
+    depends_on:
+      web:
+        condition: service_healthy             # start only when Flask is healthy
+    networks:
+      - frontend
+
+  web:
+    build: ./app                               # builds app/Dockerfile
+    image: notes-web:2.0
+    container_name: notes-web
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_HOST: db                              # service names = DNS names
+      REDIS_HOST: redis
+    expose:
+      - "5000"                                 # reachable by nginx only, NOT published
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - frontend                               # talks to nginx
+      - backend                                # talks to db + redis
+
+  db:
+    image: postgres:16-alpine
+    container_name: notes-db
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data        # named volume -> notes survive
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: notes-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]   # write data to disk
+    volumes:
+      - redisdata:/data                        # named volume -> counter survives
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  frontend:      # nginx <-> web
+  backend:       # web <-> db, redis  (nginx cannot reach the databases)

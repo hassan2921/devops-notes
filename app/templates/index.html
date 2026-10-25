@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1 id="app-title">My Notes</h1>
+  <div class="meta">
+    <span id="served-by">Served by container: {{ served_by }}</span>
+    <span id="visit-count">Page visits: {{ visits }}</span>
+  </div>
+
+  {# ---------- stats ---------- #}
+  <div class="stats">
+    <div class="stat"><div class="num" id="stat-total">{{ stats.total }}</div><div class="lbl">Total notes</div></div>
+    <div class="stat"><div class="num" id="stat-pinned">{{ stats.pinned }}</div><div class="lbl">Pinned</div></div>
+    <div class="stat"><div class="num" id="stat-high">{{ stats.high }}</div><div class="lbl">High priority</div></div>
+  </div>
+  <div class="chips" id="category-chips">
+    <a class="chip {% if not category %}active{% endif %}" href="{{ url_for('notes.index', q=q, sort=sort) }}">All ({{ stats.total }})</a>
+    {% for c in categories %}
+      <a class="chip {% if category == c %}active{% endif %}" href="{{ url_for('notes.index', q=q, sort=sort, category=c) }}">{{ c }} ({{ per_category.get(c, 0) }})</a>
+    {% endfor %}
+  </div>
+
+  {# ---------- create ---------- #}
+  <div class="card">
+    <h2>Add a note</h2>
+    <form action="{{ url_for('notes.create') }}" method="POST" id="note-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field">
+        <label for="note-title-input">Title</label>
+        <input type="text" id="note-title-input" name="title" maxlength="100" required>
+      </div>
+      <div class="field">
+        <label for="note-content-input">Content</label>
+        <textarea id="note-content-input" name="content" maxlength="2000"></textarea>
+      </div>
+      <div class="row">
+        <div>
+          <label for="note-category">Category</label>
+          <select id="note-category" name="category">
+            {% for c in categories %}<option value="{{ c }}" {% if c == 'Other' %}selected{% endif %}>{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="note-priority">Priority</label>
+          <select id="note-priority" name="priority">
+            {% for p in priorities %}<option value="{{ p }}" {% if p == 'Medium' %}selected{% endif %}>{{ p }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="shrink"><button type="submit" id="add-btn">Add Note</button></div>
+      </div>
+    </form>
+  </div>
+
+  {# ---------- search / filter / sort (GET, so filters live in the URL) ---------- #}
+  <form method="GET" action="{{ url_for('notes.index') }}" class="card row" id="filter-form">
+    <div>
+      <label for="search-input">Search</label>
+      <input type="search" id="search-input" name="q" value="{{ q }}" placeholder="Title or content...">
+    </div>
+    <div>
+      <label for="filter-category">Category</label>
+      <select id="filter-category" name="category">
+        <option value="">All</option>
+        {% for c in categories %}<option value="{{ c }}" {% if category == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="sort">Sort by</label>
+      <select id="sort" name="sort">
+        {% for s in sorts %}<option value="{{ s }}" {% if sort == s %}selected{% endif %}>{{ s|capitalize }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="shrink"><button type="submit" id="filter-btn">Apply</button></div>
+    <div class="shrink"><a href="{{ url_for('notes.index') }}" class="btn btn-light" id="clear-filters">Clear</a></div>
+  </form>
+
+  <p class="meta" id="result-count">{{ total }} note(s) found{% if q %} for "{{ q }}"{% endif %}{% if category %} in {{ category }}{% endif %}</p>
+
+  {# ---------- list ---------- #}
+  <ul class="notes" id="notes-list">
+    {% for note in notes %}
+      <li class="note-item prio-{{ note.priority }} {% if note.pinned %}pinned{% endif %}" data-id="{{ note.id }}">
+        <div class="note-head">
+          <div>
+            {% if note.pinned %}<span class="badge pin-badge">Pinned</span>{% endif %}
+            <span class="note-title">{{ note.title }}</span>
+          </div>
+          <div>
+            <span class="badge badge-category">{{ note.category }}</span>
+            <span class="badge badge-priority badge-{{ note.priority }}">{{ note.priority }}</span>
+          </div>
+        </div>
+        {% if note.content %}<div class="note-content">{{ note.content }}</div>{% endif %}
+        <div class="note-foot">
+          <span>
+            Created {{ note.created_at.strftime('%d %b %Y, %H:%M') }}
+            {% if note.updated_at %} · edited {{ note.updated_at.strftime('%d %b, %H:%M') }}{% endif %}
+          </span>
+          <span class="actions">
+            <form action="{{ url_for('notes.toggle_pin', note_id=note.id) }}" method="POST">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn-light btn-small pin-btn">{{ 'Unpin' if note.pinned else 'Pin' }}</button>
+            </form>
+            <a href="{{ url_for('notes.edit', note_id=note.id) }}" class="btn btn-light btn-small edit-link">Edit</a>
+            <form action="{{ url_for('notes.delete', note_id=note.id) }}" method="POST"
+                  onsubmit="return confirm('Delete this note?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn-danger btn-small delete-btn">Delete</button>
+            </form>
+          </span>
+        </div>
+      </li>
+    {% else %}
+      <li class="empty" id="empty-msg">{% if q or category %}No notes match your filters.{% else %}No notes yet. Add your first one above.{% endif %}</li>
+    {% endfor %}
+  </ul>
+
+  {# ---------- pagination ---------- #}
+  {% if pages > 1 %}
+    <nav class="pagination" id="pagination">
+      {% if page > 1 %}<a class="btn btn-light btn-small" id="prev-page" href="{{ url_for('notes.index', q=q, category=category, sort=sort, page=page-1) }}">Previous</a>{% endif %}
+      <span id="page-info">Page {{ page }} of {{ pages }}</span>
+      {% if page < pages %}<a class="btn btn-light btn-small" id="next-page" href="{{ url_for('notes.index', q=q, category=category, sort=sort, page=page+1) }}">Next</a>{% endif %}
+    </nav>
+  {% endif %}
+{% endblock %}
